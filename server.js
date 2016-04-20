@@ -10,9 +10,9 @@ var db = mongoose();
 var app = express();
 var passport = passport();  //Debo terminar la configuracion del Passport
 
+var port = process.env.PORT || 3000;
 
-
-app.listen(process.env.PORT || 3000); //Puerto al que escucha
+app.listen(port); //Puerto al que escucha
 module.exports=app;
 
-console.log('Servidor corriendo en http://vast-tundra-45875.herokuapp.com:80');
+console.log('Servidor corriendo en puerto: '+ port);
