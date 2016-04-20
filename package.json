@@ -1,6 +1,6 @@
 {
 "name": "MEAN",
-"versiona":"0.0.5",
+"version":"0.0.5",
 "dependencies":{
 
 "express":"~4.13.4",
