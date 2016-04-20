@@ -1,6 +1,7 @@
 
 module.exports = {
 
-	db: 'mongodb://localhost/mean-book',
+
+	db: 'mongodb://adminUsuarioOrt:!HackeameLaBdORT2016!@ds013901.mlab.com:13901/entrenatedb',
 	sessionSecret:'desarrolloSessionSecreta'
 };
