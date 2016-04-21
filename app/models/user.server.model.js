@@ -30,7 +30,12 @@ return password && password.length > 6;
 salt: {
 type: String
 },
-
+provider: {
+type: String,
+required: 'El Provider es requerido'
+},
+providerId: String,
+providerData: {},
 created: {
 type: Date,
 default: Date.now
