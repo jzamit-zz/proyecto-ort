@@ -46,8 +46,10 @@ app.set('view engine', 'ejs');     // Vistas con EJS
 app.use(passport.initialize());
 app.use(passport.session());
 
-require('../app/routes/index.server.routes.js')(app);   //Rutas
+//Rutas
+require('../app/routes/index.server.routes.js')(app);
 require('../app/routes/users.server.routes.js')(app);
+require('../app/routes/exercises.server.routes.js')(app);
 //Es importante que esto del Static este debajo de las rutas para que no se acceda primero a lo estatico bajando la performance
 //por la espera del IO del Filesystem por el contenido estatico
 app.use(express.static('./public'));  // Contenido Estatico

@@ -1,7 +1,5 @@
 var config = require('./config'),
 	mongoose = require('mongoose');
-
-
 module.exports = function(){
 	
 var db = mongoose.connect(config.db,function (error) {
@@ -11,9 +9,9 @@ var db = mongoose.connect(config.db,function (error) {
     else console.log('mongo connected');
 });
 
-require('../app/models/user.server.model');   // Estoy registrando el modelo user creado anteriormente
-
+    // Estoy registrando los modelos creados anteriormente
+require('../app/models/user.server.model');
+require('../app/models/exercise.server.model');
 return db;
-
-
 };
+

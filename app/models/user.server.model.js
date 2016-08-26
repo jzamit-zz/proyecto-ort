@@ -2,8 +2,25 @@ var mongoose = require('mongoose'),
 		crypto = require('crypto'),
 		Schema = mongoose.Schema;
 
+
+// var UserSchema = new Schema({
+// 	firstName: String,
+// 	lastName: String,
+// 	email: String,
+// 	username: String,
+// 	password: String,
+// 	salt: {
+// 	 type: String
+//  	},
+// 	created: {
+//  	 type: Date,
+// 	 default: Date.now
+//  }
+// });
+
+
 var UserSchema = new Schema({
-	
+
 firstName: String,
 lastName: String,
 email: {
@@ -22,7 +39,10 @@ trim: true
 },
 password: {
 type: String,
+required:true,
+
 validate: [
+
 function(password) {
 return password && password.length > 6;
 }, 'El Password debe ser mas largo'
@@ -40,15 +60,9 @@ created: {
 type: Date,
 default: Date.now
 }
+
 });
 
-UserSchema.virtual('fullName').get(function() {
-return this.firstName + ' ' + this.lastName;
-}).set(function(fullName) {
-var splitName = fullName.split(' ');
-this.firstName = splitName[0] || '';
-this.lastName = splitName[1] || '';
-});
 
 UserSchema.pre('save', function(next) {
 if (this.password) {
@@ -93,10 +107,9 @@ callback(null);
 });
 };
 
-UserSchema.set('toJSON', {
-getters: true,
-virtuals: true
-});
+ UserSchema.set('toJSON', {
+ getters: true
 
+ });
 
 mongoose.model('User', UserSchema);
