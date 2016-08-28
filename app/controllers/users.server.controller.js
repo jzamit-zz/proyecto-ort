@@ -43,6 +43,8 @@ exports.create = function (req, res, next) {
 
 };
 
+
+
 exports.authenticate = function (req, res, next) {
 
     User.findOne({
@@ -55,13 +57,14 @@ exports.authenticate = function (req, res, next) {
                 res.send({success: false, msg: 'Authentication failed. User not found.'});
             } else {
                 if (req.body.password == undefined) {
+                    res.status(401);
                     res.send({success: false, msg: 'No password field.'});
                     return next();
                 } else {
                     if (user.authenticate(req.body.password)) {
                         var token = createToken(user);
                         var userDTO = {id: user.id, username: user.username};
-                        res.json({success: true, expires: token.expires, token: 'JWT ' + token.payload, user: userDTO});
+                        res.json({success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO});
                     } else {
                         res.send({success: false, msg: 'Authentication failed. Wrong password.'});
                     }
