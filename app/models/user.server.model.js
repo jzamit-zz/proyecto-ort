@@ -1,115 +1,95 @@
 var mongoose = require('mongoose'),
-		crypto = require('crypto'),
-		Schema = mongoose.Schema;
+    crypto = require('crypto'),
+    Schema = mongoose.Schema;
 
-
-// var UserSchema = new Schema({
-// 	firstName: String,
-// 	lastName: String,
-// 	email: String,
-// 	username: String,
-// 	password: String,
-// 	salt: {
-// 	 type: String
-//  	},
-// 	created: {
-//  	 type: Date,
-// 	 default: Date.now
-//  }
-// });
-
-
+//User Model
 var UserSchema = new Schema({
 
-firstName: String,
-lastName: String,
-email: {
-type:String,
-trim:true,
-unique:true,
-required:true,
-match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
-
-},
-username:  {
-type: String,
-unique: true,
-required: 'El usuario es requerido',
-trim: true
-},
-password: {
-type: String,
-required:true,
-
-validate: [
-
-function(password) {
-return password && password.length > 6;
-}, 'El Password debe ser mas largo'
-]},
-salt: {
-type: String
-},
-provider: {
-type: String,
-required: 'El Provider es requerido'
-},
-providerId: String,
-providerData: {},
-created: {
-type: Date,
-default: Date.now
-}
-
+    firstName: String,
+    lastName: String,
+    email: {
+        type: String,
+        trim: true,
+        unique: true,
+        required: true,
+        match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
+    },
+    username: {
+        type: String,
+        unique: true,
+        required: 'El usuario es requerido',
+        trim: true
+    },
+    userRole:{
+        hasRole: Boolean,
+        roles:[]
+    },
+    password: {
+        type: String,
+        required: true,
+        validate: [
+            function (password) {
+                return password && password.length > 6;
+            }, 'El Password debe ser mas largo'
+        ]
+    },
+    salt: {
+        type: String
+    },
+    provider: {
+        type: String,
+        required: 'El Provider es requerido'
+    },
+    providerId: String,
+    providerData: {},
+    created: {
+        type: Date,
+        default: Date.now
+    }
 });
 
+//Antes de guardar el usuario encripta el password
+UserSchema.pre('save', function (next) {
+    if (this.password) {
+        this.salt = new
+            Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
 
-UserSchema.pre('save', function(next) {
-if (this.password) {
-this.salt = new
-Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
-this.password = this.hashPassword(this.password);
-}
-
-next();
-
+        this.password = this.hashPassword(this.password);
+    }
+    next();
 });
 
-
-UserSchema.methods.hashPassword = function(password) {
-return crypto.pbkdf2Sync(password, this.salt, 10000,
-64).toString('base64');
+UserSchema.methods.hashPassword = function (password) {
+    return crypto.pbkdf2Sync(password, this.salt, 10000,
+        64).toString('base64');
 };
 
-
-UserSchema.methods.authenticate = function(password) {
-return this.password === this.hashPassword(password);
+UserSchema.methods.authenticate = function (password) {
+    return this.password === this.hashPassword(password);
 };
 
-UserSchema.statics.findUniqueUsername = function(username, suffix,
-callback) {
-var _this = this;
-var possibleUsername = username + (suffix || '');
-_this.findOne({
+UserSchema.statics.findUniqueUsername = function (username, suffix,
+                                                  callback) {
+    var _this = this;
+    var possibleUsername = username + (suffix || '');
+    _this.findOne({
+        username: possibleUsername
+    }, function (err, user) {
+        if (!err) {
+            if (!user) {
+                callback(possibleUsername);
+            } else {
+                return _this.findUniqueUsername(username, (suffix || 0) +
+                    1, callback);
+            }
+        } else {
+            callback(null);
+        }
+    });
+};
 
-username: possibleUsername
-}, function(err, user) {
-if (!err) {
-if (!user) {
-callback(possibleUsername);
-} else {
-return _this.findUniqueUsername(username, (suffix || 0) +
-1, callback);
-}
-} else {
-callback(null);
-}
+UserSchema.set('toJSON', {
+    getters: true
 });
-};
-
- UserSchema.set('toJSON', {
- getters: true
-
- });
 
 mongoose.model('User', UserSchema);

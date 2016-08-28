@@ -5,9 +5,8 @@ var config = require('./config'),
 	bodyParser = require('body-parser'),
 	methodOverride = require('method-override'),
 	session = require('express-session'),
-	passport = require('passport');
-
-
+	passport = require('passport'),
+    jwt = require('jwt-simple');
 
 module.exports= function(){
 
@@ -26,7 +25,6 @@ app.use(compress());
 }
 
 app.use(bodyParser.urlencoded({
-
 	extended:true
 }));
 
