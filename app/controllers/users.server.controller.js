@@ -1,23 +1,17 @@
 var User = require('mongoose').model('User'),
     config = require('../../config/config'),
-    jwt = require('jwt-simple');
+    jwt = require('jwt-simple'),
+    moment = require('moment');
 
-
-var addDaysToDate = function (date, days) {
-    var result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-};
 
 var createToken = function (user) {
 
     if (user != undefined || user != null) {
         var token = {};
-        var date = Date.now();
         var payload = {
             sub: user._id,
-            iat: date,
-            exp: addDaysToDate(date, 10)
+            iat: moment().unix(),
+            exp: moment().add(7, "days").unix()
         };
         token.expire = payload.exp;
         token.payload = jwt.encode(payload, config.sessionSecret);

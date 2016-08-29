@@ -1,46 +1,49 @@
 var jwt = require('jwt-simple'),
     config = require('./config'),
-    User = require('mongoose').model('User');
+    User = require('mongoose').model('User'),
+    moment = require('moment');
+
 module.exports = function (req, res, next) {
-
     var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
-    if (token) {
-        token = token.split(' ');
-        try {
-            var decoded = jwt.decode(token[1], config.sessionSecret);
-            if (decoded.exp < Date.now()) {
-                res.status(400);
-                res.json({
-                    "status": 400,
-                    "message": "Token Expired"
-                });
+    if (!token) {
+        return res.status(403).send({success: false, msg: 'No token provided.'});
+    }
+    token = token.split(' ');
+    if (token.length <= 0) {
+        return res.status(403).send({success: false, msg: 'Malformed token.'});
+    }
+    try {
+        var decoded = jwt.decode(token[1], config.sessionSecret);
+        var today = moment().unix();
+        if (decoded.exp >= today) {
 
-                return;
-
-            } else {
-
-                User.findOne({
-                    _id: decoded.sub
-                }, function (err, user) {
-                    if (err) throw err;
-
-                    if (!user) {
-                        return res.status(403).send({success: false, msg: 'Authentication failed. User not found.'});
-                    } else {
-                       // res.json({success: true, msg: 'Welcome in the member area ' + user.username + '!'});
-                        return next();
-                    }
-                });
-            }
-        } catch (err) {
-            res.status(500);
-            res.json({
-                "status": 500,
-                "message": "Oops something went wrong",
-                "error": err
+            User.findOne({
+                _id: decoded.sub
+            }, function (err, user) {
+                if (err) {
+                    throw err;
+                }
+                if (!user) {
+                    return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.'});
+                }else{
+                    return next();
+                }
+            });
+        }else{
+            console.log(decoded.exp >= today);
+            console.log("decoded " + decoded.exp);
+            console.log("today " +today);
+            res.status(401).send({
+                "status": 401,
+                "message": "Token Expired, valid until " + decoded.exp
             });
         }
-    } else {
-        return res.status(403).send({success: false, msg: 'No token provided.'});
+    } catch (err) {
+        res.status(500);
+        res.json({
+            "status": 500,
+            "message": "Oops something went wrong",
+            "error": err
+        });
     }
 };
