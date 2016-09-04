@@ -3,7 +3,6 @@ var User = require('mongoose').model('User'),
     jwt = require('jwt-simple'),
     moment = require('moment');
 
-
 var createToken = function (user) {
 
     if (user != undefined || user != null) {
@@ -19,25 +18,27 @@ var createToken = function (user) {
     }
 };
 
+var responseTokenUser = function (user) {
+    if (user != undefined || user != null) {
+        var token = createToken(user);
+        var userDTO = {id: user.id, username: user.username};
+        var obj = {success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO};
+    }
+    return obj;
+};
+
 exports.create = function (req, res, next) {
 
     var user = new User(req.body);
-    console.log(user);
     user.save(function (err) {
-
         if (err) {
-
             return next(err);
         } else {
-
-            res.json(user);
+            var retornar = responseTokenUser(user);
+            res.json(retornar);
         }
-
     });
-
 };
-
-
 
 exports.authenticate = function (req, res, next) {
 
@@ -56,9 +57,8 @@ exports.authenticate = function (req, res, next) {
                     return next();
                 } else {
                     if (user.authenticate(req.body.password)) {
-                        var token = createToken(user);
-                        var userDTO = {id: user.id, username: user.username};
-                        res.json({success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO});
+                        var retornar = responseTokenUser(user);
+                        res.json(retornar);
                     } else {
                         res.send({success: false, msg: 'Authentication failed. Wrong password.'});
                     }
@@ -68,7 +68,6 @@ exports.authenticate = function (req, res, next) {
         next();
     });
 };
-
 
 exports.list = function (req, res, next) {
 
@@ -91,19 +90,14 @@ exports.read = function (req, res) {
 exports.userByID = function (req, res, next, id) {
 
     User.findOne({
-
         _id: id
     }, 'id firstName lastName email', function (err, user) {
 
         if (err) {
-
             return next(err);
-
         } else {
-
             req.user = user;
             next();
-
         }
     });
 };

@@ -10,20 +10,20 @@ var UserSchema = new Schema({
     email: {
         type: String,
         trim: true,
-        unique: true,
+      //  unique: true,
         required: true,
-        match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
+      //  match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
     },
     username: {
         type: String,
         unique: true,
         required: 'El usuario es requerido',
         trim: true
-    },
+    },/*
     userRole:{
         hasRole: Boolean,
         roles:[]
-    },
+    },*/
     password: {
         type: String,
         required: true,
@@ -36,10 +36,10 @@ var UserSchema = new Schema({
     salt: {
         type: String
     },
-    provider: {
+   /* provider: {
         type: String,
         required: 'El Provider es requerido'
-    },
+    },*/
     providerId: String,
     providerData: {},
     created: {
