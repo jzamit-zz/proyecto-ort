@@ -4,7 +4,7 @@ var jwt = require('jwt-simple'),
     moment = require('moment');
 
 module.exports = function (req, res, next) {
-    var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
+    var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-auth-token'];
     if (!token) {
         return res.status(403).send({success: false, msg: 'No token provided.'});
     }
