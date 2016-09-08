@@ -3,7 +3,7 @@ var Exercise = require('mongoose').model('Exercise');
 exports.create = function(req,res,next){
 
     var exercise = new Exercise(req.body);
-    console.log(exercise);
+
     exercise.save(function(err){
 
         if(err){

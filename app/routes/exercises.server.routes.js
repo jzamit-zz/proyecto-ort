@@ -12,8 +12,6 @@ module.exports = function(app){
         next();
     });
 
-
-
     app.get(path, validateToken, exercises.list);
     app.get(path + id, validateToken, exercises.read);
     app.post(path, validateToken, exercises.create);

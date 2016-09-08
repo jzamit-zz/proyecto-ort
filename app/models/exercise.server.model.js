@@ -41,11 +41,8 @@ var ExerciseSchema = new Schema({
 
 }, {timestamps: true});
 
-
-
 ExerciseSchema.set('toJSON', {
     getters: true
-
 });
 
 mongoose.model('Exercise', ExerciseSchema);

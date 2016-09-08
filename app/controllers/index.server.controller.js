@@ -11,14 +11,7 @@ req.session.lastVisit = new Date();
 
 res.render('index', {
 
-title:'Hola Mundo'
 
 });
 };
 
-
-
-
-
-
-//Primer Express Controller!!!

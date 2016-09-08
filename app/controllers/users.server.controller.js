@@ -82,9 +82,7 @@ exports.list = function (req, res, next) {
 
 // Para que devuelva el usuario by ID
 exports.read = function (req, res) {
-
     res.json(req.user);
-
 };
 
 exports.userByID = function (req, res, next, id) {
