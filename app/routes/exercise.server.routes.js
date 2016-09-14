@@ -1,4 +1,4 @@
-var exercises = require('../../app/controllers/exercises.server.controller');
+var exercises = require('../../app/controllers/exercise.server.controller');
 var validateToken = require('../../config/validateRequest');
 module.exports = function(app){
 
@@ -12,11 +12,11 @@ module.exports = function(app){
         next();
     });
 
-    app.get(path, validateToken, exercises.list);
-    app.get(path + id, validateToken, exercises.read);
-    app.post(path, validateToken, exercises.create);
-    app.put(path + id, validateToken, exercises.update);
-    app.delete(path + id, validateToken, exercises.delete);
+    app.get(path, exercises.list);
+    app.get(path + id, exercises.read);
+    app.post(path, exercises.create);
+    app.put(path + id, exercises.update);
+    app.delete(path + id, exercises.delete);
     app.param(parameter, exercises.exerciseByID);
 
 };

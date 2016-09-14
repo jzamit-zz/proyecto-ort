@@ -19,11 +19,19 @@ var UserSchema = new Schema({
         unique: true,
         required: 'El usuario es requerido',
         trim: true
-    },/*
-    userRole:{
-        hasRole: Boolean,
-        roles:[]
-    },*/
+    },
+    objective:{},
+    exercises:[],
+    history:[],
+    isGenderMale: Boolean,
+    dateOfBirth:Date,
+    phisiqueData:{
+        weight: Number,
+        isWeightKg: Boolean,
+        height:Number,
+        isHeightCm:Boolean,
+        imc:Number
+    },
     password: {
         type: String,
         required: true,

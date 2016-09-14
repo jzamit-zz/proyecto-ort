@@ -30,9 +30,7 @@ module.exports = function (req, res, next) {
                 }
             });
         }else{
-            console.log(decoded.exp >= today);
-            console.log("decoded " + decoded.exp);
-            console.log("today " +today);
+
             res.status(401).send({
                 "status": 401,
                 "message": "Token Expired, valid until " + decoded.exp
@@ -42,7 +40,7 @@ module.exports = function (req, res, next) {
         res.status(500);
         res.json({
             "status": 500,
-            "message": "Oops something went wrong",
+            "message": "Oops... something went wrong, call Superman ;)",
             "error": err
         });
     }
