@@ -1,9 +1,12 @@
 var User = require('mongoose').model('User'),
     config = require('../../config/config'),
+    mongoose =  require('mongoose'),
     jwt = require('jwt-simple'),
     moment = require('moment'),
+    promise = require('bluebird'),
     Exercise = require('mongoose').model('Exercise'),
     Objective = require('mongoose').model('Objective');
+    promise.promisifyAll(mongoose);
 
 var createToken = function (user) {
 
@@ -40,17 +43,23 @@ var getSets = function (setNumber, setReps, exercise) {
         "weight": 0,
         "done": false
     };
-    if(!exercise.isAerobic){
-        for(var i=1; i <= setNumber; i++){
-            set.number = i;
+
+    for(j=0; j<exercise.length; j++) {
+
+        if (!exercise[j].isAerobic) {
+
+            for (var i = 1; i <= setNumber; i++) {
+                set.number = i;
+                sets.push(set);
+            }
+        } else {
+            set.number = 1;
+            set.rep = 0;
             sets.push(set);
         }
-    }else{
-        set.number = 1;
-        set.rep = 0;
-        sets.push(set);
+        exercise[j].sets = sets;
+
     }
-    exercise.sets = sets;
     return exercise;
 };
 
@@ -136,30 +145,53 @@ var getExercises = function () {
 
    // makeRutineDay();
 
-    var results = [];
+    var resultado = [];
+    var biceps = [];
+    var triceps = [];
+    var shoulders = [];
+    var chest= [];
+    var back= [];
     var query = [];
 
-    query[0] = Exercise.find({exerciseMuscleGroupId:1}).limit(6);
-    query[1] = Exercise.find({exerciseMuscleGroupId:2}).limit(6);
-    query[2] = Exercise.find({exerciseMuscleGroupId:3}).limit(6);
-    query[3] = Exercise.find({exerciseMuscleGroupId:4}).limit(6);
-    query[4] = Exercise.find({exerciseMuscleGroupId:5}).limit(6);
-    query[5] = Exercise.find({exerciseMuscleGroupId:6}).limit(6);
+    // query[0] =
+    // query[1] = Exercise.find({exerciseMuscleGroupId:2}).limit(6);
+    // query[2] = Exercise.find({exerciseMuscleGroupId:3}).limit(6);
+    // query[3] = Exercise.find({exerciseMuscleGroupId:4}).limit(6);
+    // query[4] = Exercise.find({exerciseMuscleGroupId:5}).limit(6);
+    // query[5] = Exercise.find({exerciseMuscleGroupId:6}).limit(6);
 
-    for(var i = 0; i < 6; i++) {
+    promise.props({
+        biceps: Exercise.find({exerciseMuscleGroupId:1}).limit(6).execAsync(),
+        triceps: Exercise.find({exerciseMuscleGroupId:2}).limit(6).execAsync(),
+        chest:Exercise.find({exerciseMuscleGroupId:3}).limit(6).execAsync(),
+        shoulders:Exercise.find({exerciseMuscleGroupId:4}).limit(6).execAsync(),
+        back: Exercise.find({exerciseMuscleGroupId:8}).limit(6).execAsync()
 
-        query[i].exec(function (err, data) {
+    })
+        .then(function(results) {
+            console.log(results);
+            getSets(4,12,results);
+        })
+        .catch(function(err) {
+            res.send(500); // oops - we're even handling errors!
+        });
+    /*
+
+    var i = 1;
+
+        Exercise.find({exerciseMuscleGroupId:i}).limit(6).exec(function (err, data) {
 
             if (!err) {
-                results.push(data);
-                if(i==5){
-                    console.log(results);
+                results = data;
+                getSets(4,12,results);
+                console.log(results);
 
-                }
+
+
             }
         });
 
-    }
+*/
 
 
     //Exercise.find({exerciseMuscleGroupId:1}, function(err, exercises){

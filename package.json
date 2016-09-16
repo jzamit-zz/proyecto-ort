@@ -2,6 +2,7 @@
   "name": "MEAN",
   "version": "0.0.5",
   "dependencies": {
+    "bluebird": "^3.4.6",
     "body-parser": "~1.15.0",
     "compression": "~1.6.1",
     "ejs": "~2.4.1",
