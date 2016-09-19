@@ -10,7 +10,7 @@ module.exports = function (app) {
         res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
         next();
     });
-    app.post('/users/exercise/', users.getExercises);
+    //app.post('/users/exercise/', users.getExercises);
     app.route('/users').post(users.create).get(users.list);
     app.route('/users/authenticate').post(users.authenticate);
     app.route('/users/:userId').get(users.read).put(users.update).delete(users.delete);

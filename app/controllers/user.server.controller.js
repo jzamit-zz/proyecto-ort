@@ -1,13 +1,36 @@
 var User = require('mongoose').model('User'),
     config = require('../../config/config'),
-    mongoose =  require('mongoose'),
+    mongoose = require('mongoose'),
     jwt = require('jwt-simple'),
     moment = require('moment'),
+    deepcopy = require("deepcopy"),
     promise = require('bluebird'),
     Exercise = require('mongoose').model('Exercise'),
     Objective = require('mongoose').model('Objective');
-   var deepcopy = require('deepcopy');
     promise.promisifyAll(mongoose);
+
+var events = require('events');
+var eventEmitter = new events.EventEmitter();
+
+
+var banderaEjercicios = false;
+var ejercicios = {};
+
+var guardoDatos = function(){
+
+    User.findByIdAndUpdate('57dd68e12f8fd20300d4e677', {exercises : ejercicios}, function (err, user) {
+        if (err) {
+            return next(err);
+        } else {
+            console.log("Agrego ejercicios ?");
+           // res.json(user);
+
+        }
+    });
+
+
+};
+eventEmitter.on('eventoJorge', guardoDatos);
 
 var createToken = function (user) {
 
@@ -35,296 +58,130 @@ var responseTokenUser = function (user) {
 
 var setExerciseSets = function (array, set) {
 
-    for(var i = 0; i < array.length; i++){
-        array[i].sets = set.slice();
+    for (var i = 0; i < array.length; i++) {
+        array[i].sets = set;
     }
 };
 
 
 var getSets = function (setNumber, setReps, exercise) {
+
+
     var sets = [];
-    var setNumber = setNumber;
-    var setReps = setReps;
+    var setN = setNumber;
+    var setR = setReps;
 
-    for (var i = 1; i <= setNumber; i++) {
+    for (var i = 1; i <= setN; i++) {
 
-        sets.push({"number":i, "rep": setReps, "weight": 0, "done": false});
+        sets.push({"number": i, "rep": setR, "weight": 0, "done": false});
     }
 
-    if(exercise.biceps != undefined ){
+    if (exercise.biceps != undefined) {
 
         setExerciseSets(exercise.biceps, sets);
     }
-    if(exercise.triceps != undefined){
+    if (exercise.triceps != undefined) {
 
         setExerciseSets(exercise.triceps, sets);
     }
-    if(exercise.back != undefined ){
+    if (exercise.back != undefined) {
 
         setExerciseSets(exercise.back, sets);
     }
-    if(exercise.shoulders != undefined){
+    if (exercise.shoulders != undefined) {
 
         setExerciseSets(exercise.shoulders, sets);
     }
-    if(exercise.chest != undefined ){
+    if (exercise.chest != undefined) {
 
         setExerciseSets(exercise.chest, sets);
     }
 
-    console.log(exercise);
+    banderaEjercicios = true;
+    ejercicios = deepcopy(exercise);
+    eventEmitter.emit('eventoJorge');
+
     return exercise;
 };
 
 
-var setExerciseToUser = function () {
+function UpdateUserDataById(id, objectData, res, next) {
 
-
-
-
-};
-
-var makeRutineDay = function () {
-
-    console.log("Ejecuto : makeRutineDay() ");
-
-   var ejercicios = [{"hola":1},{"hola":2}];
-
-    User.findByIdAndUpdate('57d77196cc5f6ba3402f198c', {exercises:ejercicios}, function (err, user) {
+    User.findByIdAndUpdate(id, objectData, function (err, user) {
         if (err) {
             return next(err);
         } else {
-            console.log(user);
+            console.log("ok");
+            console.log(res);
+            //  res.json(user);
         }
     });
+}
+
+//
+// exports.update = function(req,res,next){
+//
+//     Objective.findByIdAndUpdate(req.objective.id, req.body, function(err, objective){
+//
+//         if(err){
+//             return next(err);
+//         }else{
+//             res.json(objective);
+//         }
+//     });
+// };
+//
 
 
+/*var getExerciseByObjective = function (objective) {
 
-    // var day = {};
-    // var muscleGroupId1 = ex1;
-    // var muscleGroupId2 = ex2;
-    // var exercisesFromDb = exercises;
-    //
-    // if(exercisesFromDb == undefined || exercisesFromDb.length == 0){
-    //     return;
-    // }
-    //
-    // if(muscleGroupId1 == undefined){
-    //     return;
-    // }
-    //
-    // for(var i = 0; i < exercisesFromDb.length; i++){
-    //
-    //     if(exercisesFromDb[i].exerciseMuscleGroupId == muscleGroupId1){
-    //         // es BICEP
-    //         if(exercisesFromDb[i].isBasic && cantEjerciciosTipoBasico < 3){
-    //             //Agregue menos que 3
-    //             exercisesToUser.push(exercisesFromDb[i]);
-    //             cantEjerciciosTipoBasico ++;
-    //         }
-    //
-    //         if(!exercisesFromDb[i].isBasic && cantEjerciciosNoBasicos < 2){
-    //             exercisesToUser.push(exercisesFromDb[i]);
-    //             cantEjerciciosNoBasicos++;
-    //         }
-    //
-    //         if(exercisesFromDb[i].isAerobic && cantEjerciciosAerobicos < 1){
-    //
-    //             ejercicioAerobico = exercisesFromDb[i];
-    //             cantEjerciciosAerobicos++;
-    //         }
-    //     }
-    // }
-    // // Al finalizar de agreger todos los ejercicios agrego el aerbico
-    // if(ejercicioAerobico != undefined){
-    //     exercisesToUser.push(ejercicioAerobico);
-    // }
-    //
-    // cantEjerciciosTipoBasico = 0;
-    // cantEjerciciosNoBasicos = 0 ;
-    // cantEjerciciosAerobicos = 0 ;
-    //
-    //
-    //
-
-};
-
-
-
-
-
-exports.getExercises = function (req, res, next) {
-
-    var cantEjerciciosTipo = 0 ;
-    var cantEjerciciosTipoBasico = 0;
-    var cantEjerciciosNoBasicos = 0 ;
-    var cantEjerciciosAerobicos = 0 ;
-    var ejercicioAerobico;
-    var exercisesFromDb = [];
-    var exercisesToUser = [];
-    var mes = [];
-    var semana = [];
-    var dia = [];
-
-    // makeRutineDay();
-
-    var resultado = [];
-    var biceps = [];
-    var triceps = [];
-    var shoulders = [];
-    var chest= [];
-    var back= [];
-    var query = [];
-
-    // query[0] =
-    // query[1] = Exercise.find({exerciseMuscleGroupId:2}).limit(6);
-    // query[2] = Exercise.find({exerciseMuscleGroupId:3}).limit(6);
-    // query[3] = Exercise.find({exerciseMuscleGroupId:4}).limit(6);
-    // query[4] = Exercise.find({exerciseMuscleGroupId:5}).limit(6);
-    // query[5] = Exercise.find({exerciseMuscleGroupId:6}).limit(6);
-
-    promise.props({
-        biceps: Exercise.find({exerciseMuscleGroupId:1}).limit(6).execAsync(),
-        triceps: Exercise.find({exerciseMuscleGroupId:2}).limit(6).execAsync(),
-        chest:Exercise.find({exerciseMuscleGroupId:3}).limit(6).execAsync(),
-        shoulders:Exercise.find({exerciseMuscleGroupId:4}).limit(6).execAsync(),
-        back: Exercise.find({exerciseMuscleGroupId:8}).limit(6).execAsync()
-
-    })
-        .then(function(results) {
-           // console.log(results);
-            getSets(4,12,results);
-        })
-        .catch(function(err) {
-            res.send(500); // oops - we're even handling errors!
-        });
-    /*
-
-     var i = 1;
-
-     Exercise.find({exerciseMuscleGroupId:i}).limit(6).exec(function (err, data) {
-
-     if (!err) {
-     results = data;
-     getSets(4,12,results);
-     console.log(results);
-
-
-
-     }
-     });
-
-     */
-
-
-    //Exercise.find({exerciseMuscleGroupId:1}, function(err, exercises){
-
-    // if(err){
-    //     console.log("error al traer ejercicios desde Bd User serve controller linea 71");
-    //     return next(err);
-    //
-    // }else{
-    //
-    //
-    //     console.log(exercises);
-
-    /*  exercisesFromDb = exercises ;
-     for(var i = 0; i < exercisesFromDb.length; i++){g
-
-     if(exercisesFromDb[i].exerciseMuscleGroupId == 1){
-     // es BICEP
-     if(exercisesFromDb[i].isBasic && cantEjerciciosTipoBasico < 3){
-     //Agregue menos que 3
-     exercisesToUser.push(exercisesFromDb[i]);
-     cantEjerciciosTipoBasico ++;
-     }
-
-     if(!exercisesFromDb[i].isBasic && cantEjerciciosNoBasicos < 2){
-     exercisesToUser.push(exercisesFromDb[i]);
-     cantEjerciciosNoBasicos++;
-     }
-
-     if(exercisesFromDb[i].isAerobic && cantEjerciciosAerobicos < 1){
-
-     ejercicioAerobico = exercisesFromDb[i];
-     cantEjerciciosAerobicos++;
-     }
-     }
-     }
-     // Al finalizar de agreger todos los ejercicios agrego el aerbico
-     if(ejercicioAerobico != undefined){
-     exercisesToUser.push(ejercicioAerobico);
-     }
-
-     cantEjerciciosTipoBasico = 0;
-     cantEjerciciosNoBasicos = 0 ;
-     cantEjerciciosAerobicos = 0 ;*/
-    //     }
-    // });
-
-
-
-
-
-
-
-
-
-
-    //  var user = new User(req.body.user);
-    //  var obj = new Objective(req.body.objective);
-
-
-
-
-
-
-
-
-
-    /* user.save(function (err) {
-     if (err) {
-     return next(err);
-     } else {
-     var retornar = responseTokenUser(user);
-     res.json(retornar);
-     }
-     });*/
-
-   // next();
-};
-
+ promise.props({
+ biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
+ triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
+ chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
+ shoulders: Exercise.find({exerciseMuscleGroupId: 4}).limit(6).execAsync(),
+ back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
+ })
+ .then(function (exercises) {
+ console.log("Ejecuro getExerciseByObjective");
+ getExerciseCustom(objective, exercises);
+ })
+ .catch(function (err) {
+ res.send(500); // oops - we're even handling errors!
+ });
+ };*/
 
 
 var getExerciseCustom = function (objective, exercises) {
 
-    if(objective != undefined && exercises != undefined){
+    if (objective != undefined && exercises != undefined) {
 
-        for(var i=0; i < exercises.length; i++){
+        switch (objective) {
 
-            switch(objective) {
+            case 'Get Slim':
+                return getSets(3, 25, exercises);
+                break;
 
-                case 'Get Slim':
-                    return getSets(3,10,exercises[i]);
-                    break;
+            case 'Get Fit':
+                console.log("Ejecuto getExerciseCustom");
+                return getSets(5, 15, exercises);
 
-                case 'Get Fit':
-                    return getSets(5,15,exercises[i]);
-                    break;
+                break;
 
-                case 'Get Big':
-                    return getSets(6,12,exercises[i]);
-                    break;
+            case 'Get Big':
+                return getSets(6, 12, exercises);
+                break;
 
-                case 'Get Strong':
-                    return getSets(5,5,exercises[i]);
-                    break;
+            case 'Get Strong':
+                return getSets(5, 5, exercises);
+                break;
 
-                default:
-                    break;
-            }
+            default:
+                console.log("Error en user.server controller")
+                break;
         }
     }
+
 };
 
 exports.create = function (req, res, next) {
@@ -402,51 +259,92 @@ exports.userByID = function (req, res, next, id) {
 
 exports.update = function (req, res, next) {
 
-    User.findByIdAndUpdate(req.user.id, req.body, function (err, user) {
-        if (err) {
-            return next(err);
-        } else {
-
-            //si actualizo objetivo debo actualizar sus ejercicios
-            if(req.user.objective){
-
-                Objective.findOne({name:req.user.objective.name}, function(err, objective){
-
-                    if (err) {
-                        return next(err);
-
-                    } else {
-                        req.objective = objective;
-                        //next();
+    var objectiveDTO;
+    var objeto;
+    var bandera = true;
+    var banderaDos = false;
 
 
+    if (req.body.objective != undefined) {
+        bandera = false;
 
+        Objective.findOne({name: req.body.objective.name}, function (err, data) {
 
+            if (err) {
+                return next(err);
 
+            } else {
 
-
-
-                    }
-
-
+                promise.props({
+                    biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
+                    triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
+                    chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
+                    shoulders: Exercise.find({exerciseMuscleGroupId: 7}).limit(6).execAsync(),
+                    back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
 
                 })
+                    .then(function (results) {
+
+                        getExerciseCustom(data.name, results);
+
+                    })
+
+                    .catch(function (err) {
+                        console.log(err);
+                        res.sendStatus(500); // oops - we're even handling errors!
+                    });
+
+
+                //procesar ejercicios
+
+
+                /*
+
+                 console.log(results);
+
+                 if(results != undefined){
+
+                 console.log("FUNCIONO @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+
+                 console.log(results);
+                 }
+                 // ejercicios = getExerciseCustom(objective.name, results); // getSets(4, 12, results);
+                 objeto = {exercise:results.fun, objective:data};
+
+                 if(results.fun != undefined){
+
+                 UpdateUserDataById('57dd68e12f8fd20300d4e677', objeto);
+                 }
+                 */
+
+
+                // objeto = {exercise:ejercicios, objective:data};
+                //UpdateUserDataById('57dd68e12f8fd20300d4e677', objeto);
+
+                // promise.props({
+                //     biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
+                //     triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
+                //     chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
+                //     shoulders: Exercise.find({exerciseMuscleGroupId: 4}).limit(6).execAsync(),
+                //     back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
+                // })
+                //     .then(function (results) {
+                //         // console.log(results);
+                //         ejercicios = getExerciseCustom(objective.name, results); // getSets(4, 12, results);
+                //
+                //     })
+                //     .catch(function (err) {
+                //         res.send(500); // oops - we're even handling errors!
+                //     });
+                // objectiveDTO = {"name":objective.name, "description":objective.description, "image":objective.image };
 
 
             }
+        });
 
 
+    }
 
-
-
-
-
-
-
-
-            res.json(user);
-        }
-    });
 };
 exports.delete = function (req, res, next) {
     req.user.remove(function (err) {
