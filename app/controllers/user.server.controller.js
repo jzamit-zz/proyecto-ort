@@ -7,28 +7,36 @@ var User = require('mongoose').model('User'),
     promise = require('bluebird'),
     Exercise = require('mongoose').model('Exercise'),
     Objective = require('mongoose').model('Objective');
-    promise.promisifyAll(mongoose);
+promise.promisifyAll(mongoose);
 
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
-
-
-var banderaEjercicios = false;
+var request;
+var response;
 var ejercicios = {};
+var objective = {};
+var userId;
 
-var guardoDatos = function(){
+var init = function () {
+    request = undefined;
+    response = undefined;
+    ejercicios = {};
+    objective = {};
+    userId = '';
+};
 
-    User.findByIdAndUpdate('57dd68e12f8fd20300d4e677', {exercises : ejercicios}, function (err, user) {
+var guardoDatos = function () {
+
+    User.findByIdAndUpdate(userId, {exercises: ejercicios, objective: objective}, function (err, user) {
         if (err) {
             return next(err);
         } else {
-            console.log("Agrego ejercicios ?");
-           // res.json(user);
-
+            console.log(objective);
+            console.log(ejercicios);
+            response.json(ejercicios);
+            init();
         }
     });
-
-
 };
 eventEmitter.on('eventoJorge', guardoDatos);
 
@@ -66,7 +74,6 @@ var setExerciseSets = function (array, set) {
 
 var getSets = function (setNumber, setReps, exercise) {
 
-
     var sets = [];
     var setN = setNumber;
     var setR = setReps;
@@ -97,7 +104,6 @@ var getSets = function (setNumber, setReps, exercise) {
         setExerciseSets(exercise.chest, sets);
     }
 
-    banderaEjercicios = true;
     ejercicios = deepcopy(exercise);
     eventEmitter.emit('eventoJorge');
 
@@ -105,67 +111,18 @@ var getSets = function (setNumber, setReps, exercise) {
 };
 
 
-function UpdateUserDataById(id, objectData, res, next) {
-
-    User.findByIdAndUpdate(id, objectData, function (err, user) {
-        if (err) {
-            return next(err);
-        } else {
-            console.log("ok");
-            console.log(res);
-            //  res.json(user);
-        }
-    });
-}
-
-//
-// exports.update = function(req,res,next){
-//
-//     Objective.findByIdAndUpdate(req.objective.id, req.body, function(err, objective){
-//
-//         if(err){
-//             return next(err);
-//         }else{
-//             res.json(objective);
-//         }
-//     });
-// };
-//
-
-
-/*var getExerciseByObjective = function (objective) {
-
- promise.props({
- biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
- triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
- chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
- shoulders: Exercise.find({exerciseMuscleGroupId: 4}).limit(6).execAsync(),
- back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
- })
- .then(function (exercises) {
- console.log("Ejecuro getExerciseByObjective");
- getExerciseCustom(objective, exercises);
- })
- .catch(function (err) {
- res.send(500); // oops - we're even handling errors!
- });
- };*/
-
-
 var getExerciseCustom = function (objective, exercises) {
 
     if (objective != undefined && exercises != undefined) {
 
-        switch (objective) {
+        switch (objective.name) {
 
             case 'Get Slim':
                 return getSets(3, 25, exercises);
                 break;
 
             case 'Get Fit':
-                console.log("Ejecuto getExerciseCustom");
                 return getSets(5, 15, exercises);
-
                 break;
 
             case 'Get Big':
@@ -259,90 +216,47 @@ exports.userByID = function (req, res, next, id) {
 
 exports.update = function (req, res, next) {
 
-    var objectiveDTO;
-    var objeto;
-    var bandera = true;
-    var banderaDos = false;
-
-
     if (req.body.objective != undefined) {
-        bandera = false;
+
+        response = res;
+        request = req;
+        var url = req.url;
+        var id = url.split("/")[2];
+        userId = id;
 
         Objective.findOne({name: req.body.objective.name}, function (err, data) {
 
             if (err) {
                 return next(err);
-
             } else {
 
+                objective = deepcopy(data);
                 promise.props({
                     biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
                     triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
                     chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
                     shoulders: Exercise.find({exerciseMuscleGroupId: 7}).limit(6).execAsync(),
                     back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
-
                 })
                     .then(function (results) {
-
-                        getExerciseCustom(data.name, results);
-
+                        getExerciseCustom(data, results);
                     })
-
                     .catch(function (err) {
                         console.log(err);
                         res.sendStatus(500); // oops - we're even handling errors!
                     });
-
-
-                //procesar ejercicios
-
-
-                /*
-
-                 console.log(results);
-
-                 if(results != undefined){
-
-                 console.log("FUNCIONO @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
-                 console.log(results);
-                 }
-                 // ejercicios = getExerciseCustom(objective.name, results); // getSets(4, 12, results);
-                 objeto = {exercise:results.fun, objective:data};
-
-                 if(results.fun != undefined){
-
-                 UpdateUserDataById('57dd68e12f8fd20300d4e677', objeto);
-                 }
-                 */
-
-
-                // objeto = {exercise:ejercicios, objective:data};
-                //UpdateUserDataById('57dd68e12f8fd20300d4e677', objeto);
-
-                // promise.props({
-                //     biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
-                //     triceps: Exercise.find({exerciseMuscleGroupId: 2}).limit(6).execAsync(),
-                //     chest: Exercise.find({exerciseMuscleGroupId: 3}).limit(6).execAsync(),
-                //     shoulders: Exercise.find({exerciseMuscleGroupId: 4}).limit(6).execAsync(),
-                //     back: Exercise.find({exerciseMuscleGroupId: 8}).limit(6).execAsync()
-                // })
-                //     .then(function (results) {
-                //         // console.log(results);
-                //         ejercicios = getExerciseCustom(objective.name, results); // getSets(4, 12, results);
-                //
-                //     })
-                //     .catch(function (err) {
-                //         res.send(500); // oops - we're even handling errors!
-                //     });
-                // objectiveDTO = {"name":objective.name, "description":objective.description, "image":objective.image };
-
-
             }
         });
 
-
+    } else {
+        //Probar actualizar datos sin objetivos
+        User.findByIdAndUpdate(id, req.body, function (err, user) {
+            if (err) {
+                return next(err);
+            } else {
+                response.json(user);
+            }
+        });
     }
 
 };
