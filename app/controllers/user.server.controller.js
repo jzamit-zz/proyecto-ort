@@ -13,6 +13,7 @@ var events = require('events');
 var eventEmitter = new events.EventEmitter();
 var request;
 var response;
+var nextJorge;
 var ejercicios = {};
 var objective = {};
 var userId;
@@ -20,6 +21,7 @@ var userId;
 var init = function () {
     request = undefined;
     response = undefined;
+    nextJorge = undefined;
     ejercicios = {};
     objective = {};
     userId = '';
@@ -29,16 +31,17 @@ var guardoDatos = function () {
 
     User.findByIdAndUpdate(userId, {exercises: ejercicios, objective: objective}, function (err, user) {
         if (err) {
-            return next(err);
+            return nextJorge(err);
         } else {
+            console.log(user);
             console.log(objective);
             console.log(ejercicios);
             response.json(ejercicios);
-            init();
+            //init();
         }
     });
 };
-eventEmitter.on('eventoJorge', guardoDatos);
+eventEmitter.on('eventoGuardarDatosUsuario', guardoDatos);
 
 var createToken = function (user) {
 
@@ -75,12 +78,10 @@ var setExerciseSets = function (array, set) {
 var getSets = function (setNumber, setReps, exercise) {
 
     var sets = [];
-    var setN = setNumber;
-    var setR = setReps;
 
-    for (var i = 1; i <= setN; i++) {
+    for (var i = 1; i <= setNumber; i++) {
 
-        sets.push({"number": i, "rep": setR, "weight": 0, "done": false});
+        sets.push({"number": i, "rep": setReps, "weight": 0, "done": false});
     }
 
     if (exercise.biceps != undefined) {
@@ -105,11 +106,10 @@ var getSets = function (setNumber, setReps, exercise) {
     }
 
     ejercicios = deepcopy(exercise);
-    eventEmitter.emit('eventoJorge');
+    eventEmitter.emit('eventoGuardarDatosUsuario');
 
     return exercise;
 };
-
 
 var getExerciseCustom = function (objective, exercises) {
 
@@ -138,7 +138,6 @@ var getExerciseCustom = function (objective, exercises) {
                 break;
         }
     }
-
 };
 
 exports.create = function (req, res, next) {
@@ -166,8 +165,8 @@ exports.authenticate = function (req, res, next) {
                 res.send({success: false, msg: 'Authentication failed. User not found.'});
             } else {
                 if (req.body.password == undefined) {
-                    res.status(401);
-                    res.send({success: false, msg: 'No password field.'});
+                   res.status(401);
+                   res.send({success: false, msg: 'No password field.'});
                     return next();
                 } else {
                     if (user.authenticate(req.body.password)) {
@@ -179,7 +178,7 @@ exports.authenticate = function (req, res, next) {
                 }
             }
         }
-        next();
+
     });
 };
 
@@ -193,8 +192,8 @@ exports.list = function (req, res, next) {
         }
     });
 };
-
-// Para que devuelva el usuario by ID
+//
+// // Para que devuelva el usuario by ID
 exports.read = function (req, res) {
     res.json(req.user);
 };
@@ -203,7 +202,7 @@ exports.userByID = function (req, res, next, id) {
 
     User.findOne({
         _id: id
-    }, 'id firstName lastName email', function (err, user) {
+    }, 'id firstName lastName email objective exercises', function (err, user) {
 
         if (err) {
             return next(err);
@@ -215,14 +214,12 @@ exports.userByID = function (req, res, next, id) {
 };
 
 exports.update = function (req, res, next) {
+    var userId = req.url.split("/")[2];
+    response = res;
+    request = req;
+    nextJorge = next;
 
     if (req.body.objective != undefined) {
-
-        response = res;
-        request = req;
-        var url = req.url;
-        var id = url.split("/")[2];
-        userId = id;
 
         Objective.findOne({name: req.body.objective.name}, function (err, data) {
 
@@ -250,15 +247,14 @@ exports.update = function (req, res, next) {
 
     } else {
         //Probar actualizar datos sin objetivos
-        User.findByIdAndUpdate(id, req.body, function (err, user) {
+        User.findByIdAndUpdate(userId, req.body, 'id firstName lastName email' ,function (err, user) {
             if (err) {
                 return next(err);
             } else {
-                response.json(user);
+                res.json({id:user.id, name:user.firstName, email:user.email});
             }
         });
     }
-
 };
 exports.delete = function (req, res, next) {
     req.user.remove(function (err) {
