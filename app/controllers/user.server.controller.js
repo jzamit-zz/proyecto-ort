@@ -36,7 +36,7 @@ var guardoDatos = function () {
             console.log(user);
             console.log(objective);
             console.log(ejercicios);
-            response.json(ejercicios);
+            response.json({objetivo:objective, ejerciciosObj: ejercicios});
             //init();
         }
     });
