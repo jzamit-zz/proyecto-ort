@@ -33,7 +33,7 @@ var guardoDatos = function () {
         if (err) {
             return nextJorge(err);
         } else {
-            console.log(user);
+           // console.log(user);
             console.log(objective);
             console.log(ejercicios);
             response.json({objetivo:objective, ejerciciosObj: ejercicios});
@@ -118,7 +118,7 @@ var getExerciseCustom = function (objective, exercises) {
         switch (objective.name) {
 
             case 'Get Slim':
-                return getSets(3, 25, exercises);
+                return getSets(6, 25, exercises);
                 break;
 
             case 'Get Fit':
