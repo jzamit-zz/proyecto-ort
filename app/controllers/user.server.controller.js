@@ -33,11 +33,7 @@ var guardoDatos = function () {
         if (err) {
             return nextJorge(err);
         } else {
-           // console.log(user);
-            console.log(objective);
-            console.log(ejercicios);
             response.json({objetivo:objective, ejerciciosObj: ejercicios});
-            //init();
         }
     });
 };
@@ -140,12 +136,43 @@ var getExerciseCustom = function (objective, exercises) {
     }
 };
 
+
+var httpStatusCode = function(errorMsg){
+    var num = -1;
+    if(errorMsg != undefined){
+        var msgs = errorMsg.split(':');
+        var tipo = msgs[1];
+
+        if(tipo.includes('$user')){
+            num = 1;
+        }else if(tipo.includes('$email')){
+            num = 2;
+        }
+    }
+    return num;
+};
+
 exports.create = function (req, res, next) {
 
     var user = new User(req.body);
     user.save(function (err) {
         if (err) {
-            return next(err);
+
+            if(err.code == 11000){
+               var num =  httpStatusCode(err.errmsg);
+
+               if(num == 1){
+                   res.status(409);
+                   res.send({success: false, msg: 'Username already exists'});
+               }else if(num == 2){
+                   res.status(409);
+                   res.send({success: false, msg: 'Email already exists'});
+               }else{
+                   return next(err);
+               }
+            }else{
+                return next(err);
+            }
         } else {
             var retornar = responseTokenUser(user);
             res.json(retornar);
@@ -156,7 +183,7 @@ exports.create = function (req, res, next) {
 exports.authenticate = function (req, res, next) {
 
     User.findOne({
-        username: req.body.username
+        username: req.body.username.toLowerCase()
     }, function (err, user) {
         if (err) {
             return next(err);

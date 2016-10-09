@@ -6,7 +6,7 @@ var jwt = require('jwt-simple'),
 module.exports = function (req, res, next) {
 
     // Antes funcionaba con x-auth-token
-    var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['X-Auth-Token'];
+    var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-auth-token'];
     if (!token) {
         return res.status(403).send({success: false, msg: 'No token provided.'});
     }
@@ -26,12 +26,12 @@ module.exports = function (req, res, next) {
                     throw err;
                 }
                 if (!user) {
-                    return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.'});
-                }else{
+                    return res.status(403).send({success: false, msg: 'Authentication failed. User not found.'});
+                } else {
                     return next();
                 }
             });
-        }else{
+        } else {
 
             res.status(401).send({
                 "status": 401,

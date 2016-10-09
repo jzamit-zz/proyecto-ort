@@ -10,9 +10,9 @@ var UserSchema = new Schema({
     email: {
         type: String,
         trim: true,
-      //  unique: true,
+        unique: true,
         required: true,
-      //  match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
+        match: [/.+\@.+\..+/, "Por favor usa una direccion de  e-mail valida"]
     },
     username: {
         type: String,
@@ -25,13 +25,13 @@ var UserSchema = new Schema({
     history:[],
     isGenderMale: Boolean,
     dateOfBirth:Date,
-    phisiqueData:{
+    phisiqueData:[{
         weight: Number,
         isWeightKg: Boolean,
         height:Number,
         isHeightCm:Boolean,
         imc:Number
-    },
+    }],
     password: {
         type: String,
         required: true,
@@ -58,10 +58,16 @@ var UserSchema = new Schema({
 
 //Antes de guardar el usuario encripta el password
 UserSchema.pre('save', function (next) {
+
+    if(this.username){
+        this.username = this.username.toLowerCase();
+    }
+    if(this.email){
+        this.email = this.email.toLowerCase();
+    }
     if (this.password) {
         this.salt = new
             Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
-
         this.password = this.hashPassword(this.password);
     }
     next();
