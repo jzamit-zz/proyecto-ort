@@ -55,10 +55,16 @@ var createToken = function (user) {
 };
 
 var responseTokenUser = function (user) {
+    var obj;
     if (user != undefined || user != null) {
         var token = createToken(user);
         var userDTO = {id: user.id, username: user.username};
-        var obj = {success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO};
+        obj = {success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO};
+    }
+    //Si tiene ejercicios y objetivo tambien se los manda
+    if( user.objective != undefined && user.exercises != undefined){
+        obj.objective = user.objective;
+        obj.exercises = user.exercises;
     }
     return obj;
 };
@@ -174,8 +180,7 @@ exports.create = function (req, res, next) {
                 return next(err);
             }
         } else {
-            var retornar = responseTokenUser(user);
-            res.json(retornar);
+            res.json(responseTokenUser(user));
         }
     });
 };
@@ -197,6 +202,7 @@ exports.authenticate = function (req, res, next) {
                     return next();
                 } else {
                     if (user.authenticate(req.body.password)) {
+                        //retornar tambien objetivo y ejercicios. !!!!
                         var retornar = responseTokenUser(user);
                         res.json(retornar);
                     } else {
@@ -241,7 +247,7 @@ exports.userByID = function (req, res, next, id) {
 };
 
 exports.update = function (req, res, next) {
-    var userId = req.url.split("/")[2];
+    userId = req.url.split("/")[2];
     response = res;
     request = req;
     nextJorge = next;

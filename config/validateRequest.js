@@ -19,6 +19,7 @@ module.exports = function (req, res, next) {
         var today = moment().unix();
         if (decoded.exp >= today) {
 
+
             User.findOne({
                 _id: decoded.sub
             }, function (err, user) {

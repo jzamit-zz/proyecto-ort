@@ -21,7 +21,7 @@ var UserSchema = new Schema({
         trim: true
     },
     objective:{},
-    exercises:[],
+    exercises:{},
     history:[],
     isGenderMale: Boolean,
     dateOfBirth:Date,
