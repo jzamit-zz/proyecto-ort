@@ -18,14 +18,6 @@ var ejercicios = {};
 var objective = {};
 var userId;
 
-var init = function () {
-    request = undefined;
-    response = undefined;
-    nextJorge = undefined;
-    ejercicios = {};
-    objective = {};
-    userId = '';
-};
 
 var guardoDatos = function () {
 
@@ -58,7 +50,7 @@ var responseTokenUser = function (user) {
     var obj;
     if (user != undefined || user != null) {
         var token = createToken(user);
-        var userDTO = {id: user.id, username: user.username};
+        var userDTO = {id: user.id, username: user.username, firstName:user.firstName, lastName:user.lastName};
         obj = {success: true, expire: token.expire, token: 'JWT ' + token.payload, user: userDTO};
     }
     //Si tiene ejercicios y objetivo tambien se los manda
