@@ -79,7 +79,10 @@ UserSchema.methods.hashPassword = function (password) {
 };
 
 UserSchema.methods.authenticate = function (password) {
-    return this.password === this.hashPassword(password);
+
+    var bandera = this.password === this.hashPassword(password);
+    return bandera;
+
 };
 
 UserSchema.statics.findUniqueUsername = function (username, suffix,

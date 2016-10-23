@@ -227,7 +227,7 @@ exports.userByID = function (req, res, next, id) {
 
     User.findOne({
         _id: id
-    }, 'id firstName lastName email objective exercises', function (err, user) {
+    }, 'id firstName lastName email', function (err, user) {
 
         if (err) {
             return next(err);
@@ -247,11 +247,9 @@ exports.update = function (req, res, next) {
     if (req.body.objective != undefined) {
 
         Objective.findOne({name: req.body.objective.name}, function (err, data) {
-
             if (err) {
                 return next(err);
             } else {
-
                 objective = deepcopy(data);
                 promise.props({
                     biceps: Exercise.find({exerciseMuscleGroupId: 1}).limit(6).execAsync(),
@@ -271,12 +269,22 @@ exports.update = function (req, res, next) {
         });
 
     } else {
-        //Probar actualizar datos sin objetivos
+
         User.findByIdAndUpdate(userId, req.body, 'id firstName lastName email' ,function (err, user) {
             if (err) {
                 return next(err);
             } else {
-                res.json({id:user.id, name:user.firstName, email:user.email});
+                if(req.body.password != undefined){
+                    user.password = req.body.password;
+                }
+                user.save(function(err) {
+                    if (err){
+                        throw err;
+                    }
+                    else{
+                        res.json({id:user.id, firstName:user.firstName, lastName:user.lastName});
+                    }
+                });
             }
         });
     }

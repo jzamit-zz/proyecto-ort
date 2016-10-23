@@ -14,6 +14,6 @@ module.exports = function (app) {
 
     app.route('/users').post(users.create).get(users.list);
     app.route('/users/authenticate').post(users.authenticate);
-    app.route('/users/:userId').get(users.read).put(validateToken,users.update).delete(users.delete);
+    app.route('/users/:userId').get(users.read).put(validateToken,users.update).delete(validateToken,users.delete);
     app.param('userId', users.userByID);
 };
